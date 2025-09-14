@@ -1,0 +1,37 @@
+{
+  "name": "Asriel Dreemurr",
+  "expressions": [
+    [
+      "default",
+      "Default"
+    ],
+    [
+      "determined",
+      "Determined"
+    ],
+    [
+      "guilty",
+      "Guilty"
+    ],
+    [
+      "sad",
+      ""
+    ],
+    [
+      "sad_furrowed"
+    ],
+    [
+      "sad_smiling"
+    ],
+    [
+      "sad_frowning"
+    ]
+  ],
+  "internal": {
+    "expressions": [
+      {
+        "id": "default"
+      }
+    ]
+  }
+}
