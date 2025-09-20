@@ -1,7 +1,8 @@
-package ctx
+package context
 
 import (
 	"image"
+	"image/color"
 
 	"github.com/golang/freetype/truetype"
 	imageutils "github.com/saihnii4/utdr-video-creator/v2/pkg/utdr/image_utils"
@@ -24,12 +25,14 @@ func Init() (*imageutils.Context, error) {
 		return nil, err
 	}
 
+	color := color.RGBA{0, 255, 0, 255}
+
 	ctxBuilder := imageutils.ContextBuilder{
 		Hinting:     font.HintingFull,
 		Font:        utFont,
 		FontSize:    fontSize,
 		LineSpacing: lineSpacing,
-		FontSource:  image.White,
+		FontSource:  image.NewUniform(color),
 		DPI:         dpi,
 	}
 

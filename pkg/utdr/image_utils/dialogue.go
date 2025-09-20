@@ -2,6 +2,7 @@ package imageutils
 
 import (
 	"errors"
+	"strings"
 
 	"golang.org/x/image/math/fixed"
 )
@@ -31,9 +32,47 @@ func (ctx *Context) checkDialogueFlags() error {
 }
 
 func (ctx *Context) DrawDialogue(text string, opts *DialogueDrawOptions) error {
+	lines := strings.SplitSeq(text, "\n")
+	for line := range lines {
+		words := strings.Split(line, " ")
+		for i, word := range words {
+			var err error
+			if i == 0 {
+				err = ctx.DrawText(word, &NewSentenceOpts)
+			} else {
+				err = ctx.DrawText(word, nil)
+			}
+			ctx.DrawText(" ", nil)
+
+			if err != nil {
+				if !errors.Is(err, DrawOverflowError) {
+					return err
+				}
+
+				ctx.NewLine(&DialogueNewLineOptions{
+					NextLineIsSentence: false,
+				})
+				ctx.DrawText(word, nil)
+				ctx.DrawText(" ", nil)
+			}
+		}
+		ctx.NewLine(&DialogueNewLineOptions{
+			NextLineIsSentence: true,
+		})
+	}
+	return nil
+}
+
+func (ctx *Context) DrawText(text string, opts *DialogueDrawOptions) error {
 	err := ctx.checkDialogueFlags()
 	if err != nil {
 		return err
+	}
+
+	textWidth := ctx.FontDrawer.MeasureString(text)
+
+	if ctx.FontDrawer.Dot.X+textWidth+verticalPadding > fixed.I(textboxWidth) {
+		return DrawOverflowError
 	}
 
 	if opts != nil && opts.IsSentence {

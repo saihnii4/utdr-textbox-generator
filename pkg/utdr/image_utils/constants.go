@@ -1,8 +1,12 @@
 package imageutils
 
 import (
+	"errors"
+
 	"golang.org/x/image/math/fixed"
 )
+
+var DrawOverflowError = errors.New("overflow error while drawing")
 
 var (
 	textboxHeight         = 152 * 2
