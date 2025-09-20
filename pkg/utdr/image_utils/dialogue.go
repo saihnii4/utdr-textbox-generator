@@ -34,28 +34,7 @@ func (ctx *Context) checkDialogueFlags() error {
 func (ctx *Context) DrawDialogue(text string, opts *DialogueDrawOptions) error {
 	lines := strings.SplitSeq(text, "\n")
 	for line := range lines {
-		words := strings.Split(line, " ")
-		for i, word := range words {
-			var err error
-			if i == 0 {
-				err = ctx.DrawText(word, &NewSentenceOpts)
-			} else {
-				err = ctx.DrawText(word, nil)
-			}
-			ctx.DrawText(" ", nil)
-
-			if err != nil {
-				if !errors.Is(err, DrawOverflowError) {
-					return err
-				}
-
-				ctx.NewLine(&DialogueNewLineOptions{
-					NextLineIsSentence: false,
-				})
-				ctx.DrawText(word, nil)
-				ctx.DrawText(" ", nil)
-			}
-		}
+		ctx.drawLine(line)
 		ctx.NewLine(&DialogueNewLineOptions{
 			NextLineIsSentence: true,
 		})
@@ -84,6 +63,36 @@ func (ctx *Context) DrawText(text string, opts *DialogueDrawOptions) error {
 	}
 
 	ctx.FontDrawer.DrawString(text)
+	return nil
+}
+
+func (ctx *Context) drawFragment(fragment string) bool {
+	textWidth := ctx.FontDrawer.MeasureString(fragment)
+
+	if ctx.FontDrawer.Dot.X+textWidth+verticalPadding > fixed.I(textboxWidth) {
+		return false
+	}
+
+	ctx.FontDrawer.DrawString(fragment)
+	return true
+}
+
+func (ctx *Context) drawLine(line string) error {
+	line = "* " + line
+	err := ctx.checkDialogueFlags()
+	if err != nil {
+		return err
+	}
+
+	words := strings.SplitSeq(line, " ")
+	for word := range words {
+		ok := ctx.drawFragment(word)
+		if !ok {
+			ctx.NewLine(nil)
+			ctx.drawFragment(word)
+		}
+		ctx.drawFragment(" ")
+	}
 	return nil
 }
 
