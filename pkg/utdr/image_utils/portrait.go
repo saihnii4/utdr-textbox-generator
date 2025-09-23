@@ -41,7 +41,7 @@ func clampImage(img image.Image, dst image.Rectangle) image.Image {
 	imgHeight := img.Bounds().Dy()
 	slog.Info("image dimensions", "height", imgHeight, "width", imgWidth)
 	if imgHeight > imgWidth {
-		clamped := resize.Resize(0, uint(dst.Dy()), img, resize.Bilinear)
+		clamped := resize.Resize(0, uint(dst.Dy()), img, resize.Lanczos3)
 		slog.Info(
 			"clamped img dimensions",
 			"height",
@@ -79,10 +79,11 @@ func (ctx *Context) DrawPortrait(portrait *Portrait) error {
 		clampedImg.Bounds(),
 		textboxPasteRect,
 	) // textboxPasteRect is not normalized
+
 	draw.Draw(ctx.Background, pasteRect.Bounds(), clampedImg, clampedImg.Bounds().Min, draw.Src)
 
-	ctx.FontDrawer.Dot.X += fixed.I(textboxPasteRect.Dx()) + portraitHorizontalGap
-	ctx.originPoint.X += fixed.I(textboxPasteRect.Dx()) + portraitHorizontalGap
+	ctx.FontDrawer.Dot.X += fixed.I(textboxPasteRect.Dx() + portraitHorizontalGap)
+	ctx.originPoint.X += fixed.I(textboxPasteRect.Dx() + portraitHorizontalGap)
 	ctx.Flags.HasPortrait = true
 
 	return nil

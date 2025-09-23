@@ -8,15 +8,7 @@ import (
 )
 
 type DialogueDrawOptions struct {
-	IsSentence bool
-}
-
-type DialogueNewLineOptions struct {
-	NextLineIsSentence bool
-}
-
-var NewSentenceOpts = DialogueDrawOptions{
-	IsSentence: true,
+	// unimplemented
 }
 
 func (ctx *Context) checkDialogueFlags() error {
@@ -35,41 +27,19 @@ func (ctx *Context) DrawDialogue(text string, opts *DialogueDrawOptions) error {
 	lines := strings.SplitSeq(text, "\n")
 	for line := range lines {
 		ctx.drawLine(line)
-		ctx.NewLine(&DialogueNewLineOptions{
-			NextLineIsSentence: true,
-		})
+		ctx.NewLine()
 	}
 	return nil
 }
 
-func (ctx *Context) DrawText(text string, opts *DialogueDrawOptions) error {
-	err := ctx.checkDialogueFlags()
-	if err != nil {
-		return err
+func (ctx *Context) drawFragment(fragment string, padLeft bool) bool {
+	if padLeft {
+		fragment = "  " + fragment
 	}
 
-	textWidth := ctx.FontDrawer.MeasureString(text)
-
-	if ctx.FontDrawer.Dot.X+textWidth+verticalPadding > fixed.I(textboxWidth) {
-		return DrawOverflowError
-	}
-
-	if opts != nil && opts.IsSentence {
-		ctx.FontDrawer.DrawString("* ")
-	}
-
-	if !ctx.Flags.HasDialogue {
-		ctx.Flags.HasDialogue = true
-	}
-
-	ctx.FontDrawer.DrawString(text)
-	return nil
-}
-
-func (ctx *Context) drawFragment(fragment string) bool {
 	textWidth := ctx.FontDrawer.MeasureString(fragment)
 
-	if ctx.FontDrawer.Dot.X+textWidth+verticalPadding > fixed.I(textboxWidth) {
+	if ctx.FontDrawer.Dot.X+textWidth+fixed.I(verticalPadding) > fixed.I(textboxWidth) {
 		return false
 	}
 
@@ -86,17 +56,17 @@ func (ctx *Context) drawLine(line string) error {
 
 	words := strings.SplitSeq(line, " ")
 	for word := range words {
-		ok := ctx.drawFragment(word)
+		ok := ctx.drawFragment(word, false)
 		if !ok {
-			ctx.NewLine(nil)
-			ctx.drawFragment(word)
+			ctx.NewLine()
+			ctx.drawFragment(word, true)
 		}
-		ctx.drawFragment(" ")
+		ctx.drawFragment(" ", false)
 	}
 	return nil
 }
 
-func (ctx *Context) NewLine(opts *DialogueNewLineOptions) error {
+func (ctx *Context) NewLine() error {
 	err := ctx.checkDialogueFlags()
 	if err != nil {
 		return err

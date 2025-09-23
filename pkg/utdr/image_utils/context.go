@@ -48,8 +48,8 @@ func (ctx *Context) DrawTextbox() error {
 	box := borderRect(textboxBorderWidth)
 	draw.Draw(ctx.Background, box, image.Black, box.Min, draw.Src)
 	ctx.FontDrawer.Dot = ctx.FontDrawer.Dot.Add(fixed.Point26_6{
-		X: horizontalPadding + fixed.I(textboxBorderWidth),
-		Y: verticalOffset + verticalPadding + fixed.I(textboxBorderWidth),
+		X: fixed.I(horizontalPadding + textboxBorderWidth),
+		Y: fixed.I(verticalOffset + verticalPadding + textboxBorderWidth),
 	})
 	ctx.originPoint = ctx.FontDrawer.Dot
 	ctx.Flags.HasTextBox = true
